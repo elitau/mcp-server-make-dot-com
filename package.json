@@ -1,0 +1,28 @@
+{
+  "name": "mcp-server-make-dot-com",
+  "version": "1.0.0",
+  "description": "MCP server for Make.com API integration",
+  "license": "MIT",
+  "author": "Eduard Litau",
+  "homepage": "https://github.com/elitau/mcp-server-make-dot-com",
+  "type": "module",
+  "bin": {
+    "mcp-server-make-dot-com": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc && shx chmod +x dist/*.js",
+    "prepare": "npm run build",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "0.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "shx": "^0.3.4",
+    "typescript": "^5.6.2"
+  }
+}
