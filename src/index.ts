@@ -29,6 +29,7 @@ const READ_SCENARIO_BLUEPRINT_TOOL: Tool = {
 };
 
 // Server implementation
+console.log("Starting mcp-server-make-dot-com server...");
 const server = new Server(
   {
     name: "mcp-server-make-dot-com",
@@ -49,6 +50,8 @@ if (!MAKE_API_KEY) {
   console.error("Error: MAKE_DOT_COM_API_KEY environment variable is required");
   process.exit(1);
 }
+
+console.log(`Configured with Make.com base URL: ${MAKE_BASE_URL}`);
 
 interface MakeBlueprint {
   code: string;
@@ -77,6 +80,7 @@ function isMakeScenarioBlueprintArgs(args: unknown): args is { scenario_id: numb
 
 async function getScenarioBlueprint(scenarioId: number, draft: boolean = false): Promise<string> {
   const url = `https://${MAKE_BASE_URL}/api/v2/scenarios/${scenarioId}/blueprint${draft ? '?draft=true' : ''}`;
+  console.log(`Fetching blueprint for scenario ${scenarioId}${draft ? ' (draft version)' : ''}`);
 
   const response = await fetch(url, {
     headers: {
@@ -90,6 +94,7 @@ async function getScenarioBlueprint(scenarioId: number, draft: boolean = false):
     throw new Error(`Make.com API error: ${response.status} ${response.statusText}\n${await response.text()}`);
   }
 
+  console.log(`Successfully retrieved blueprint for scenario ${scenarioId}`);
   const data = await response.json() as MakeBlueprint;
   return JSON.stringify(data.response.blueprint, null, 2);
 }
