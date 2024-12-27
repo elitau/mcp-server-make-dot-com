@@ -29,7 +29,6 @@ const READ_SCENARIO_BLUEPRINT_TOOL: Tool = {
 };
 
 // Server implementation
-console.log("Starting mcp-server-make-dot-com server...");
 const server = new Server(
   {
     name: "mcp-server-make-dot-com",
@@ -50,8 +49,6 @@ if (!MAKE_API_KEY) {
   console.error("Error: MAKE_DOT_COM_API_KEY environment variable is required");
   process.exit(1);
 }
-
-console.log(`Configured with Make.com base URL: ${MAKE_BASE_URL}`);
 
 interface MakeBlueprint {
   code: string;
@@ -80,7 +77,6 @@ function isMakeScenarioBlueprintArgs(args: unknown): args is { scenario_id: numb
 
 async function getScenarioBlueprint(scenarioId: number, draft: boolean = false): Promise<string> {
   const url = `https://${MAKE_BASE_URL}/api/v2/scenarios/${scenarioId}/blueprint${draft ? '?draft=true' : ''}`;
-  console.log(`Fetching blueprint for scenario ${scenarioId}${draft ? ' (draft version)' : ''}`);
 
   const response = await fetch(url, {
     headers: {
@@ -94,7 +90,6 @@ async function getScenarioBlueprint(scenarioId: number, draft: boolean = false):
     throw new Error(`Make.com API error: ${response.status} ${response.statusText}\n${await response.text()}`);
   }
 
-  console.log(`Successfully retrieved blueprint for scenario ${scenarioId}`);
   const data = await response.json() as MakeBlueprint;
   return JSON.stringify(data.response.blueprint, null, 2);
 }
@@ -105,43 +100,27 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 }));
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  try {
-    const { name, arguments: args } = request.params;
+  const { name, arguments: args } = request.params;
 
-    if (!args) {
-      throw new Error("No arguments provided");
+  if (name === READ_SCENARIO_BLUEPRINT_TOOL.name) {
+    if (!isMakeScenarioBlueprintArgs(args)) {
+      console.error("Invalid arguments for read_make_dot_com_scenario_blueprint");
+      throw new Error("Invalid arguments");
     }
 
-    switch (name) {
-      case "read_make_dot_com_scenario_blueprint": {
-        if (!isMakeScenarioBlueprintArgs(args)) {
-          throw new Error("Invalid arguments for read_make_dot_com_scenario_blueprint");
-        }
-        const { scenario_id, draft = false } = args;
-        const blueprint = await getScenarioBlueprint(scenario_id, draft);
-        return {
-          content: [{ type: "text", text: blueprint }],
-          isError: false,
-        };
-      }
-
-      default:
-        return {
-          content: [{ type: "text", text: `Unknown tool: ${name}` }],
-          isError: true,
-        };
+    try {
+      const blueprint = await getScenarioBlueprint(args.scenario_id, args.draft);
+      return {
+        content: [{ type: "text", text: blueprint }],
+      };
+    } catch (error) {
+      console.error(`Error processing scenario ${args.scenario_id}:`, error);
+      throw error;
     }
-  } catch (error) {
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Error: ${error instanceof Error ? error.message : String(error)}`,
-        },
-      ],
-      isError: true,
-    };
   }
+
+  console.error(`Unknown tool requested: ${name}`);
+  throw new Error(`Unknown tool: ${name}`);
 });
 
 async function runServer() {
