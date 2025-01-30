@@ -1,0 +1,50 @@
+#!/usr/bin/env zsh
+
+PROJECT_DIR="$(dirname "$0")/.."
+PROJECT_PATH="$( cd -- "${PROJECT_DIR}" >/dev/null 2>&1 ; pwd -P )"
+
+set -o nounset
+set -o errexit
+set -o pipefail 
+
+echo "Install packages & build..."
+npm install
+npm run build
+
+echo "Get Make.com API Key from Environment, 1Password or Command-Line..."
+MAKE_DOT_COM_API_KEY=${MAKE_DOT_COM_API_KEY:-""}
+if test -z "${MAKE_DOT_COM_API_KEY}"; then
+  if type op &>/dev/null; then
+    OP_MAKE_DOT_COM_API_KEY_REF=${1:-"op://Studitemps/Make/Claude MCP API Token"}
+    export MAKE_DOT_COM_API_KEY=$(op read "${OP_MAKE_DOT_COM_API_KEY_REF}")
+  else
+    export MAKE_DOT_COME_API_KEY=${1:?'Must provide make.com API key'}
+  fi
+fi
+
+CONFIG_JSON=$(cat <<JSON
+{
+  "mcpServers": {
+    "make-dot-com": {
+      "command": "node",
+      "args": [
+        "${PROJECT_PATH}/dist/index.js"
+      ],
+      "env": {
+        "MAKE_DOT_COM_API_KEY": "${MAKE_DOT_COM_API_KEY}",
+        "MAKE_DOT_COM_BASE_URL": "eu2.make.com"
+      }
+    }
+  }
+}
+JSON
+)
+
+echo "Configure claude desktop to include Make.com MCP..."
+if test -s "$HOME/Library/Application Support/Claude/claude_desktop_config.json"; then
+  CONFIG_JSON=$(jq -s '.[0] * .[1]' "$HOME/Library/Application Support/Claude/claude_desktop_config.json" <(echo "${CONFIG_JSON}"))
+fi
+
+echo "${CONFIG_JSON}" > "$HOME/Library/Application Support/Claude/claude_desktop_config.json"
+
+echo 'DONE. MCP for getting Make.com scenario blueprints is ready for use.'

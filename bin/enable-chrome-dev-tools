@@ -1,0 +1,3 @@
+echo '{"allowDevTools": true}' > ~/Library/Application\ Support/Claude/developer_settings.json
+
+echo 'Enabled Chrome Dev Tools. Open Dev Tools by hitting ⌘ + ⌥ + ⇧ + i'
