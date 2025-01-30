@@ -11,11 +11,19 @@ echo "Install packages & build..."
 npm install
 npm run build
 
+
+USE_OP=false
+OP_MAKE_DOT_COM_API_KEY_REF=""
+MAKE_DOT_COM_API_KEY=""
+case $1 in
+  --debug) set -o xtrace; shift ;;
+  --use-op) USE_OP=true; shift; OP_MAKE_DOT_COM_API_KEY_REF=$1; shift ;;
+  *) MAKE_DOT_COM_API_KEY=$1; shift ;;
+esac
+
 echo "Get Make.com API Key from Environment, 1Password or Command-Line..."
-MAKE_DOT_COM_API_KEY=${MAKE_DOT_COM_API_KEY:-""}
 if test -z "${MAKE_DOT_COM_API_KEY}"; then
-  if type op &>/dev/null; then
-    OP_MAKE_DOT_COM_API_KEY_REF=${1:-"op://Studitemps/Make/Claude MCP API Token"}
+  if ${USE_OP} && type op &>/dev/null; then
     export MAKE_DOT_COM_API_KEY=$(op read "${OP_MAKE_DOT_COM_API_KEY_REF}")
   else
     export MAKE_DOT_COME_API_KEY=${1:?'Must provide make.com API key'}

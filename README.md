@@ -6,16 +6,16 @@ An MCP server implementation that integrates the Make.com API, providing reading
 
 I granted the following scopes to the API key:
 
-* `agents:read`
-* `apps:read`
-* `connections:read`
-* `custom-property-structures:read`
-* `datastores:read`
-* `devices:read`
-* `scenarios:read`
-* `scenarios:run`
-* `scenarios:write`
-* `teams:read`
+- `agents:read`
+- `apps:read`
+- `connections:read`
+- `custom-property-structures:read`
+- `datastores:read`
+- `devices:read`
+- `scenarios:read`
+- `scenarios:run`
+- `scenarios:write`
+- `teams:read`
 
 ## Features
 
@@ -33,6 +33,10 @@ I granted the following scopes to the API key:
 
 ### Usage with Claude Desktop
 
+Clone this repo and run `bin/setup`. Either pass your Make.com API key as the first argument, via `MAKE_DOT_COM_API_KEY` environment variable or pass the `--use-op` flag with the secret ref.
+
+#### Manual setup
+
 Clone this repo, run `npm install` in it. This should generate a `dist/index.js` file. Copy the path of this file into the `claude_desktop_config.json` like this:
 
 ```json
@@ -40,9 +44,7 @@ Clone this repo, run `npm install` in it. This should generate a `dist/index.js`
   "mcpServers": {
     "make-dot-com": {
       "command": "node",
-      "args": [
-        "/full/absolute/path/to/mcp-server-make-dot-com/dist/index.js"
-      ],
+      "args": ["/full/absolute/path/to/mcp-server-make-dot-com/dist/index.js"],
       "env": {
         "MAKE_DOT_COM_API_KEY": "your-api-key-from-make-dot-com",
         "MAKE_DOT_COM_BASE_URL": "eu2.make.com"
@@ -51,4 +53,3 @@ Clone this repo, run `npm install` in it. This should generate a `dist/index.js`
   }
 }
 ```
-
